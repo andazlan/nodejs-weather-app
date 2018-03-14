@@ -1,9 +1,34 @@
-const request = require("request");
+const yargs = require("yargs");
 
-request({
-    url : "http://maps.googleapis.com/maps/api/geocode/json?address=Jl.%20Rungkut%20Mejoyo%20Selatan%20X%20Blok%20AK%20No.13",
-    json : true
-}, (error, response, body) => {
-    console.log(body);
-    console.log(error);
+const geocode = require("./geocode/geocode");
+const weather = require("./weather/weather");
+
+const argv = yargs.options({
+    a: {
+        demand : true,
+        alias : "address",
+        describe : "address to fecth weather for",
+        string : true
+    } 
+}).help().alias("help", 'h').argv;
+
+//console.log(argv);
+
+geocode.geocodeAddress(argv.address, (errorMessage, results) => {
+    if (errorMessage){
+        console.log(errorMessage);
+    }
+    else{
+        //console.log(JSON.stringify(results, undefined, 2));
+        console.log(results.address);
+        weather.getWeather(results.latitude, results.longitude, (errorMessage, weatherResults) => {
+            if (errorMessage) {
+                console.log(errorMessage);
+            }
+            else{
+                //console.log(JSON.stringify(weatherResults, undefined, 2));
+                console.log(`It's currently ${weatherResults.temperature}. It's feels like ${weatherResults.apparentTemperature}`)
+            }
+        });
+    }
 });
